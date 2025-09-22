@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procesador de facturas XML  </title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f2f5;
+            margin: 0;
+            flex-direction: column;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .file-input-label {
+            display: inline-block;
+            background-color: #2E8B57;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+        .file-input-label:hover {
+            background-color: #256a42;
+        }
+        #fileInput {
+            display: none;
+        }
+        #status {
+            margin-top: 20px;
+            color: #555;
+            font-size: 14px;
+            min-height: 20px;
+        }
+        #download-button {
+            background-color: #1a73e8;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+            display: none;
+            margin-top: 20px;
+        }
+        #download-button:hover {
+            background-color: #155bb3;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2E8B57;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <h1>Interfaz gráfica para procesador de facturas XML</h1>
+    <p>Selecciona uno o varios archivos ZIP que contengan facturas en formato XML.</p>
+    
+    <label for="fileInput" class="file-input-label">
+        Seleccionar Archivos ZIP
+    </label>
+    <input type="file" id="fileInput" multiple accept=".zip">
+
+    <div id="status"></div>
+    <div class="loading-spinner" id="spinner"></div>
+
+    <button id="download-button" style="display: none;">
+        Descargar Reporte (facturas.csv)
+    </button>
+</div>
+
+<script src="codigo.js"></script>
+
+</body>
+</html>
