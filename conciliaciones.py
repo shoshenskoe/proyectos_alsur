@@ -146,13 +146,13 @@ def ejecucion_programa(ruta_excel_cargos: str, ruta_excel_ban: str) -> list:
 
 
     ###cargos
-    #ahora revisamos que cargos estan en  contabilidad y no en los cargos bancarios
+    #ahora revisamos que cargos estan en el banco pero no en los cargos de contabilidad
 
     for elemento in lista_cargos_conta:
         if elemento in lista_cargos_bancarios:
             lista_cargos_bancarios.remove( elemento )
 
-    #revisamos que elementos estan en los cargos del banco pero no en contabilidad
+    #revisamos que elementos estan en los cargos de contabilidad pero en el banco
     for elemento in cargos_bancarios_extraidos:
         if elemento in lista_cargos_conta:
             lista_cargos_conta.remove( elemento )
@@ -166,9 +166,13 @@ def ejecucion_programa(ruta_excel_cargos: str, ruta_excel_ban: str) -> list:
         if elemento in lista_abonos_bancarios:
             lista_abonos_bancarios.remove(elemento)
 
+    #revisamos los abonos que estan en contabilidad pero no en el banco
 
+    for elemento in abonos_bancarios_extraidos:
+        if elemento in lista_abonos_conta:
+            lista_abonos_conta.remove(elemento)
 
-    return lista_cargos_conta, lista_abonos_bancarios
+    return lista_cargos_bancarios,lista_cargos_conta, lista_abonos_bancarios, lista_abonos_conta
 
 
 
