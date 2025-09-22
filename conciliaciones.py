@@ -121,20 +121,20 @@ def procesar_baan(ruta_pdf: str) -> tuple[list]:
 # Ejecutar script
 
 # Ruta al archivo PDF
-archivo_pdf = r"C:\Users\SALCIDOA\Downloads\SERMEX 3108.pdf"
+ruta_excel_banco = r"C:\Users\SALCIDOA\Downloads\SERMEX 3108.pdf"
+ruta_excel_baan = r"C:\Users\SALCIDOA\Downloads\excel.xlsx"
 
-
-def ejecucion_programa(ruta_excel_cargos: str, ruta_excel_ban: str) -> list:
+def ejecucion_programa(ruta_excel_banco: str, ruta_excel_baan: str) -> list:
 
     #obtenemos la lista de los abonos y conta del ban
-    lista_abonos_conta, lista_cargos_conta = procesar_baan(ruta_excel_ban)
+    lista_abonos_conta, lista_cargos_conta = procesar_baan(ruta_excel_baan)
 
     # Llama a la funcion que usa PyMuPDF
-    cargos_bancarios_extraidos = extraer_cargos_con_pymupdf(ruta_excel_cargos)
+    cargos_bancarios_extraidos = extraer_cargos_con_pymupdf(ruta_excel_banco)
 
     # Llamamos a la función para extraer los abonos
     delta = 0.001 #los abonos llevan una delta por lo problematico de su ubicacion
-    abonos_bancarios_extraidos = extraer_abonos_con_pymupdf(archivo_pdf,   delta)
+    abonos_bancarios_extraidos = extraer_abonos_con_pymupdf(ruta_excel_banco,   delta)
 
 
     #creamos una copia de las listas de cargos y abonos extraidos para trabajar con ellas y  
@@ -245,7 +245,7 @@ def extraer_abonos_con_pymupdf(ruta_pdf: str, epsilon:float ) -> list[float]:
 # Ejecucion
 
 # 1. Ruta al archivo PDF
-archivo_pdf = r"c:\Users\SALCIDOA\Downloads\conciliacion\SERMEX 3108.pdf"
+ruta_excel_banco = r"c:\Users\SALCIDOA\Downloads\conciliacion\SERMEX 3108.pdf"
 
 # 2. Llama a la función para extraer los abonos
 delta = 0.001
