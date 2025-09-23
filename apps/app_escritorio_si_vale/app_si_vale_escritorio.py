@@ -49,7 +49,7 @@ def hacer_verficacion(df ):
 
     datos_faltantes=df[df["CC"].isnull()]
 
-    if ( datos_faltantes.empty):
+    if ( not datos_faltantes.empty):
         
         datos_faltantes=datos_faltantes.reset_index()
         #datos_faltantes
@@ -62,7 +62,7 @@ def hacer_verficacion(df ):
             S=pd.Series({"CC":centro,"Nombre Empleado":datos_faltantes["Nombre Empleado"][i]})
             df3=pd.concat([df3, S.to_frame().T], ignore_index=True)
 
-    return None
+    return df3
 
 def verificar_no_camiones(df3):
 
@@ -304,7 +304,7 @@ def logica_principal( path_archivo_excel, path_base_sivale, path_centro_util ):
 
     """# verificación"""
 
-    hacer_verficacion(df)
+    df = hacer_verficacion(df)
 
     df3 = verificar_no_camiones(df)
 
