@@ -296,7 +296,7 @@ def elaborar_excel_poliza(dfsucio, df, df4, df_parapoliza ):
 
     return archivo_buffer
 
-def logica_principal( path_archivo_excel, path_base_sivale, path_centro_util ):
+def logica_principal( path_archivo_excel, path_base_sivale ):
 
     dfsucio = obtener_dfsucio(path_archivo_excel)
 
@@ -308,10 +308,10 @@ def logica_principal( path_archivo_excel, path_base_sivale, path_centro_util ):
 
     df3 = verificar_no_camiones(df)
 
-    # Segunda tabla dinámica  y poliza
+    # Segunda tabla dinámica y poliza
 
     df4 = crear_segunda_tabla_din(df)
-
+    
     path_centro_util = "https://docs.google.com/spreadsheets/d/1gnfLiD1arrr5G7seQi85-f3Cd5n7_miS/edit?usp=sharing&ouid=111113060171554295483&rtpof=true&sd=true"
     utilitario = obtener_utilitario(path_centro_util)
 
