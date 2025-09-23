@@ -195,7 +195,7 @@ def extraer_abonos_con_pymupdf(ruta_pdf: str, epsilon:float ) -> list[float]:
 
 #ruta_excel_baan = r"C:\Users\SALCIDOA\Downloads\excel.xlsx"
 
-def ejecucion_programa(ruta_excel_banco: str, ruta_excel_baan: str) -> list:
+def ejecucion_programa(ruta_excel_banco: str, ruta_excel_baan: str) -> tuple[list[float], list[float], list[float], list[float]]:
 
     #obtenemos la lista de los abonos y conta del ban
     lista_abonos_conta, lista_cargos_conta = procesar_baan(ruta_excel_baan)
@@ -211,7 +211,7 @@ def ejecucion_programa(ruta_excel_banco: str, ruta_excel_baan: str) -> list:
     #creamos una copia de las listas de cargos y abonos extraidos para trabajar con ellas y  
     #no modificar las listas originales
     lista_cargos_bancarios = cargos_bancarios_extraidos.copy()
-    
+
     lista_abonos_bancarios = abonos_bancarios_extraidos.copy()
 
 
