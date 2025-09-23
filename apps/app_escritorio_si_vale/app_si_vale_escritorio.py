@@ -124,7 +124,11 @@ def verificar_faltantes (df_parapoliza):
 
     return boleano
 
-def completar_utilitario ( df_parapoliza, utilitario):
+
+###esta funcion pide los datos faltantes y los
+# anade al df de poliza y al df de utilitario
+
+def completar_utilitario1 ( df_parapoliza, utilitario) :
     
     datos_faltantes=df_parapoliza[df_parapoliza["UTILITARIO"].isnull()]
     datos_faltantes=datos_faltantes.reset_index()
@@ -135,8 +139,8 @@ def completar_utilitario ( df_parapoliza, utilitario):
         if datos_faltantes["CC"][i]!="E913":
 
             j=datos_faltantes["index"][i]
-
-            uti=input("Introduzca el centro utilitario de "+str(datos_faltantes["CC"][i]))
+            
+            uti=input("Introduzca el centro utilitario de "+str(datos_faltantes["CC"][i]) )
 
             uti=uti.upper()
 
@@ -151,6 +155,56 @@ def completar_utilitario ( df_parapoliza, utilitario):
 
 
     return df_parapoliza
+
+
+
+def completar_utilitario(df_parapoliza, utilitario, respuestas: dict):
+    """
+    Completa el campo 'UTILITARIO' en df_parapoliza usando valores provistos por el usuario.
+
+    Args:
+        df_parapoliza: DataFrame que contiene la columna "UTILITARIO" y "CC".
+        utilitario: DataFrame donde se acumulan las correspondencias CC-UTILITARIO.
+        respuestas: dict con clave=CC y valor=utilitario elegido por el usuario.
+    
+    Returns:
+        df_parapoliza actualizado y utilitario actualizado.
+    """
+    datos_faltantes = df_parapoliza[df_parapoliza["UTILITARIO"].isnull()].reset_index()
+
+    for i in range(len(datos_faltantes)):
+        cc = datos_faltantes.loc[i, "CC"]
+        if cc != "E913":
+            j = datos_faltantes.loc[i, "index"]
+
+            if cc not in respuestas:
+                raise ValueError(f"No se proporcionó utilitario para {cc}")
+
+            uti = respuestas[cc].upper()
+
+            # Actualizamos el df original
+            df_parapoliza.loc[j, "UTILITARIO"] = uti
+
+            # Guardamos en tabla auxiliar
+            S = pd.Series({"CC": cc, "UTILITARIO": uti})
+            utilitario = pd.concat([utilitario, S.to_frame().T], ignore_index=True)
+
+            enlace = "https://drive.google.com/drive/folders/172IVSmCSHNfAzATjhLq641FAnWdN2PFr?usp=sharing"
+            utilitario.to_excel(enlace, index= False)
+
+
+    return df_parapoliza, utilitario
+
+
+
+
+
+
+
+
+
+
+
 
 def hacer_poliza_final( df_parapoliza, Referencia): 
 
@@ -250,7 +304,7 @@ def logica_principal( path_archivo_excel, path_base_sivale, path_centro_util ):
 
     """# verificación"""
 
-    hacer_verficicacion(df)
+    hacer_verficacion(df)
 
     df3 = verificar_no_camiones(df)
 
@@ -266,7 +320,7 @@ def logica_principal( path_archivo_excel, path_base_sivale, path_centro_util ):
     booleano = verificar_faltantes(df_parapoliza)
 
     if (booleano== True):
-        df_parapoliza = completar_utilitario(df_parapoliza,utilitario)
+        df_parapoliza,_ = completar_utilitario(df_parapoliza,utilitario)
 
     df_parapoliza = hacer_poliza_final(df_parapoliza)
 
