@@ -74,7 +74,6 @@ def extraer_cargos_con_pymupdf(ruta_pdf: str) -> list[float]:
     output:
         una tupla con dos listas. Una lista son los abonos y otro los cargos
 """
-ruta_pdf= r"C:\Users\SALCIDOA\Downloads\excel.xlsx"
 
 def procesar_baan(ruta_pdf: str) -> tuple[list]:
 
@@ -117,62 +116,6 @@ def procesar_baan(ruta_pdf: str) -> tuple[list]:
     abonos_resultado = [ -float(elemento[:-1]) if  elemento.endswith("-") else float(elemento) for elemento in abonos]
 
     return abonos_resultado,cargos_resultado
-
-# Ejecutar script
-
-# Ruta al archivo PDF
-ruta_excel_banco = r"C:\Users\SALCIDOA\Downloads\SERMEX 3108.pdf"
-ruta_excel_baan = r"C:\Users\SALCIDOA\Downloads\excel.xlsx"
-
-def ejecucion_programa(ruta_excel_banco: str, ruta_excel_baan: str) -> list:
-
-    #obtenemos la lista de los abonos y conta del ban
-    lista_abonos_conta, lista_cargos_conta = procesar_baan(ruta_excel_baan)
-
-    # Llama a la funcion que usa PyMuPDF
-    cargos_bancarios_extraidos = extraer_cargos_con_pymupdf(ruta_excel_banco)
-
-    # Llamamos a la función para extraer los abonos
-    delta = 0.001 #los abonos llevan una delta por lo problematico de su ubicacion
-    abonos_bancarios_extraidos = extraer_abonos_con_pymupdf(ruta_excel_banco,   delta)
-
-
-    #creamos una copia de las listas de cargos y abonos extraidos para trabajar con ellas y  
-    #no modificar las listas originales
-    lista_cargos_bancarios = cargos_bancarios_extraidos.copy()
-
-    lista_abonos_bancarios = abonos_bancarios_extraidos.copy()
-
-
-
-    ###cargos
-    #ahora revisamos que cargos estan en el banco pero no en los cargos de contabilidad
-
-    for elemento in lista_cargos_conta:
-        if elemento in lista_cargos_bancarios:
-            lista_cargos_bancarios.remove( elemento )
-
-    #revisamos que elementos estan en los cargos de contabilidad pero en el banco
-    for elemento in cargos_bancarios_extraidos:
-        if elemento in lista_cargos_conta:
-            lista_cargos_conta.remove( elemento )
-
-
- 
-    #####abonos
-    #revisamos que abonos estan en el banco pero no en la contabilidad
-
-    for elemento in lista_abonos_conta:
-        if elemento in lista_abonos_bancarios:
-            lista_abonos_bancarios.remove(elemento)
-
-    #revisamos los abonos que estan en contabilidad pero no en el banco
-
-    for elemento in abonos_bancarios_extraidos:
-        if elemento in lista_abonos_conta:
-            lista_abonos_conta.remove(elemento)
-
-    return lista_cargos_bancarios,lista_cargos_conta, lista_abonos_bancarios, lista_abonos_conta
 
 
 
@@ -242,46 +185,64 @@ def extraer_abonos_con_pymupdf(ruta_pdf: str, epsilon:float ) -> list[float]:
     print(f"\nExtracción completada. Se encontraron {len(todos_los_abonos)} abonos.")
     return todos_los_abonos
 
-# Ejecucion
-
-# 1. Ruta al archivo PDF
-ruta_excel_banco = r"c:\Users\SALCIDOA\Downloads\conciliacion\SERMEX 3108.pdf"
-
-# 2. Llama a la función para extraer los abonos
-delta = 0.001
-abonos_extraidos = extraer_abonos_con_pymupdf(archivo_pdf,   delta)
-
-
-len(abonos_extraidos)
-# 4. Calcula la suma total para verificar con el documento
-total_abonos = sum(abonos_extraidos)
-# [cite_start]Compara este total con el "TOTAL IMPORTE ABONOS" de 67,282,311.56 que aparece en la página 52 del PDF [cite: 826]
-print(f"\nSuma de todos los abonos extraídos: {total_abonos:,.2f}")
-
-
-lista_abonos_ban = pd.read_csv(r"C:\Users\SALCIDOA\Downloads\abonos_ban.csv", header=None)
-lista_abonos_conta = lista_abonos_ban.iloc[:,0].to_list()
 
 
 
+# Ejecutar script
 
-## revisamos los que estan de mas en una y otra lista
+# Ruta al archivo PDF
+#ruta_excel_banco = r"C:\Users\SALCIDOA\Downloads\SERMEX 3108.pdf"
 
-lista_abonos_banco = abonos_extraidos.copy()
+#ruta_excel_baan = r"C:\Users\SALCIDOA\Downloads\excel.xlsx"
 
-for elemento in lista_abonos_conta:
-    if elemento in lista_abonos_banco:
-        lista_abonos_banco.remove(elemento)
+def ejecucion_programa(ruta_excel_banco: str, ruta_excel_baan: str) -> list:
 
-print("Creditos del banco no correspondidos : " , lista_abonos_banco)
-print("Total: " , len(lista_abonos_banco))
+    #obtenemos la lista de los abonos y conta del ban
+    lista_abonos_conta, lista_cargos_conta = procesar_baan(ruta_excel_baan)
 
-#reiniciamos la lista
-lista_abonos_banco = abonos_extraidos.copy()
+    # Llama a la funcion que usa PyMuPDF
+    cargos_bancarios_extraidos = extraer_cargos_con_pymupdf(ruta_excel_banco)
 
-for elemento in lista_abonos_banco:
-    if elemento in lista_abonos_conta:
-        lista_abonos_conta.remove(elemento)
+    # Llamamos a la función para extraer los abonos
+    delta = 0.001 #los abonos llevan una delta por lo problematico de su ubicacion
+    abonos_bancarios_extraidos = extraer_abonos_con_pymupdf(ruta_excel_banco,   delta)
 
-print("Nuestros creditos no correspondidos: " , lista_abonos_conta)
-print("Total: " , len(lista_abonos_conta))
+
+    #creamos una copia de las listas de cargos y abonos extraidos para trabajar con ellas y  
+    #no modificar las listas originales
+    lista_cargos_bancarios = cargos_bancarios_extraidos.copy()
+    
+    lista_abonos_bancarios = abonos_bancarios_extraidos.copy()
+
+
+
+    ###cargos
+    #ahora revisamos que cargos estan en el banco pero no en los cargos de contabilidad
+
+    for elemento in lista_cargos_conta:
+        if elemento in lista_cargos_bancarios:
+            lista_cargos_bancarios.remove( elemento )
+
+    #revisamos que elementos estan en los cargos de contabilidad pero en el banco
+    for elemento in cargos_bancarios_extraidos:
+        if elemento in lista_cargos_conta:
+            lista_cargos_conta.remove( elemento )
+
+
+ 
+    #####abonos
+    #revisamos que abonos estan en el banco pero no en la contabilidad
+
+    for elemento in lista_abonos_conta:
+        if elemento in lista_abonos_bancarios:
+            lista_abonos_bancarios.remove(elemento)
+
+    #revisamos los abonos que estan en contabilidad pero no en el banco
+
+    for elemento in abonos_bancarios_extraidos:
+        if elemento in lista_abonos_conta:
+            lista_abonos_conta.remove(elemento)
+
+    return lista_cargos_bancarios,lista_cargos_conta, lista_abonos_bancarios, lista_abonos_conta
+
+
