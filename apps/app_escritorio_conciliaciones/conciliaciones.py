@@ -12,6 +12,8 @@ import pandas as pd
     output:
         Una lista de números de punto flotante que representan los montos de los cargos.
 """
+ruta_pdf = r"C:\Users\SALCIDOA\Downloads\SERMEX 3108.pdf"
+
 def extraer_cargos_con_pymupdf(ruta_pdf: str) -> list[float]:
     todos_los_cargos = []
     
@@ -28,30 +30,40 @@ def extraer_cargos_con_pymupdf(ruta_pdf: str) -> list[float]:
             # Buscamos el encabezado "CARGOS" para usarlo como referencia a la hora de ubicar la columna
             #de los cargos
             encabezado_info = [palabra for palabra in palabras_en_pagina if palabra[4].upper() == 'CARGOS']
-            
+
+
             # Si encontramos el encabezado en la página
             if encabezado_info:
 
+                #si es la pagina 1 del edo cuenta puede presentarse un error porque la palabra cargos puede
+                #encontrarse en otros contextos a lo largo de la pagina, situamos la atencion en la ultima vez
+                #que aparece
                 if ( i== 0 ) :
                     encabezado = encabezado_info[-1]
                 else:
                     encabezado = encabezado_info[0]
                 
-                # Extraemos las coordenadas del encabezado de la tupla
+
+                # Extraemos las coordenadas del encabezado de la tupla de los cargos
                 columna_x0 = encabezado[0]
                 columna_x1 = encabezado[2]
                 borde_inferior_encabezado = encabezado[3]
+
+           
                 
                 # Iteramos sobre todas las palabras de la página nuevamente
-                for palabra_tupla in palabras_en_pagina:
+                for indice, palabra_tupla in enumerate(palabras_en_pagina):
                     # Extraemos la información de la tupla de la palabra
                     px0, py0, px1, py1, texto_palabra = palabra_tupla[:5]
+
+
+                    
                     
                     # Verificamos tres condiciones 
                     centro_x_palabra = (px0 + px1) / 2
                     esta_debajo_encabezado = py0 > borde_inferior_encabezado
                     esta_en_columna = columna_x0 <= centro_x_palabra <= columna_x1
-                    
+
                     if esta_debajo_encabezado and esta_en_columna:
                         # Limpiamos el texto para convertirlo a número
                         texto_limpio = texto_palabra.replace(',', '')
@@ -60,9 +72,10 @@ def extraer_cargos_con_pymupdf(ruta_pdf: str) -> list[float]:
                             try:
                                 valor_cargo = float(texto_limpio)
                                 todos_los_cargos.append(valor_cargo)
+
                             except ValueError:
                                 continue
-                                
+
     #print(f"\nExtracción completada. Se encontraron {len(todos_los_cargos)} cargos.")
     return todos_los_cargos
 """
