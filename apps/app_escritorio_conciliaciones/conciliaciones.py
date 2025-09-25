@@ -12,7 +12,6 @@ import pandas as pd
     output:
         Una lista de números de punto flotante que representan los montos de los cargos.
 """
-ruta_pdf = r"C:\Users\SALCIDOA\Downloads\SERMEX 3108.pdf"
 
 def extraer_cargos_con_pymupdf(ruta_pdf: str) -> list[float]:
     todos_los_cargos = []
@@ -201,13 +200,13 @@ def extraer_abonos_con_pymupdf(ruta_pdf: str, epsilon:float ) -> list[float]:
 
 
 
-# Ejecutar script
 
 # Ruta al archivo PDF
 #ruta_excel_banco = r"C:\Users\SALCIDOA\Downloads\SERMEX 3108.pdf"
 
 #ruta_excel_baan = r"C:\Users\SALCIDOA\Downloads\excel.xlsx"
 
+#esta es la funcion que orquesta todo
 def ejecucion_programa(ruta_excel_banco: str, ruta_excel_baan: str) -> tuple[list[float], list[float], list[float], list[float], list[float], list[float]]:
 
     #obtenemos la lista de los abonos y conta del ban

@@ -36,7 +36,7 @@ def extraer_cargos_con_pymupdf(ruta_pdf: str) -> list[tuple[str, float]]:
                                 # Buscar la fecha en la misma línea (misma coordenada Y aproximada)
                                 fecha_candidatos = [
                                     t for (fx0, fy0, fx1, fy1, t, *_) in palabras_en_pagina
-                                    if  (py1 <= (fy0+fy1)/2 <=py0)  and ( col_x0_fecha-0.001 <= (fx0+fx1)/2 <= (col_x1_fecha + 0.1) )
+                                    if  (py1 <= (fy0+fy1)/2 <=py0)  and ( col_x0_fecha-0.001 <= (fx0+fx1)/2 <= (col_x1_fecha + 1) )
                                 ]
 
                                 fecha = fecha_candidatos[0] if fecha_candidatos else None

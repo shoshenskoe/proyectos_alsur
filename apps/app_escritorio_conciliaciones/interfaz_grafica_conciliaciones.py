@@ -31,13 +31,13 @@ def ejecutar():
 
         # Resumen
         resumen = ""
-        resumen += f"CARGOS DEL BANCO NO RECONOCIDOS:\n  Longitud: {len(lista_cargos_bancarios)}\n  Suma: {sum(lista_cargos_bancarios):,.2f}\n\n"
-        resumen += f"NUESTROS CARGOS NO RECONOCIDOS:\n  Longitud: {len(lista_cargos_conta)}\n  Suma: {sum(lista_cargos_conta):,.2f}\n\n"
-        resumen += f"ABONOS DEL BANCO NO RECONOCIDOS:\n  Longitud: {len(lista_abonos_bancarios)}\n  Suma: {sum(lista_abonos_bancarios):,.2f}\n\n"
-        resumen += f"NUESTROS ABONOS NO RECONOCIDOS:\n  Longitud: {len(lista_abonos_conta)}\n  Suma: {sum(lista_abonos_conta):,.2f}\n\n"
-        resumen += "=============================\n"
-        resumen += f"CARGOS BANCARIOS EXTRAÍDOS :\n  Longitud: {len(cargos_bancarios_extraidos)}\n  Suma: {sum(cargos_bancarios_extraidos):,.2f}\n\n"
-        resumen += f"ABONOS BANCARIOS EXTRAÍDOS:\n  Longitud: {len(abonos_bancarios_extraidos)}\n  Suma: {sum(abonos_bancarios_extraidos):,.2f}\n\n"
+        resumen += f"CARGOS DEL BANCO NO RECONOCIDOS:\n  Cant. Mov: {len(lista_cargos_bancarios)}\n  Suma: {sum(lista_cargos_bancarios):,.2f}\n\n"
+        resumen += f"NUESTROS CARGOS NO RECONOCIDOS:\n  Cant. Mov: {len(lista_cargos_conta)}\n  Suma: {sum(lista_cargos_conta):,.2f}\n\n"
+        resumen += f"ABONOS DEL BANCO NO RECONOCIDOS:\n  Cant. Mov: {len(lista_abonos_bancarios)}\n  Suma: {sum(lista_abonos_bancarios):,.2f}\n\n"
+        resumen += f"NUESTROS ABONOS NO RECONOCIDOS:\n  Cant. Mov: {len(lista_abonos_conta)}\n  Suma: {sum(lista_abonos_conta):,.2f}\n\n"
+        resumen += "=====VERIFICAR QUE ESTO COINCIDA============\n"
+        resumen += f"Cargos bancarios extraidos :\n  Cant. Mov: {len(cargos_bancarios_extraidos)}\n  Suma: {sum(cargos_bancarios_extraidos):,.2f}\n\n"
+        resumen += f"Abonos bancarios extraidos:\n  Cant. Mov: {len(abonos_bancarios_extraidos)}\n  Suma: {sum(abonos_bancarios_extraidos):,.2f}\n\n"
 
         text_resumen.delete("1.0", tk.END)
         text_resumen.insert(tk.END, resumen)
@@ -71,7 +71,7 @@ def crear_texto_scroll(parent, width=90, height=5):
 
 # Interfaz
 root = tk.Tk()
-root.title("Conciliación Bancaria")
+root.title("Conciliació¿on bancaria")
 
 frame = tk.Frame(root)
 frame.pack(padx=10, pady=10)
@@ -100,7 +100,7 @@ text_resumen.pack(padx=10, pady=10, fill="both", expand=True)
 
 # Pestaña Listas
 frame_listas = tk.Frame(notebook)
-notebook.add(frame_listas, text="Listas Completas")
+notebook.add(frame_listas, text="Listado de movimientos")
 
 # Cada lista en su propio cuadro con scrollbar
 tk.Label(frame_listas, text="Cargos del banco no reconocidos:").pack(anchor="w")
