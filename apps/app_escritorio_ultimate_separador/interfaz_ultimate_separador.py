@@ -2,7 +2,6 @@ import PyPDF2
 import re
 import os
 import zipfile
-
 import io
 
 # Función para extraer el titular de la cuenta de una página
@@ -52,18 +51,20 @@ def separar_paginas ( pdf_path : str, output_dir : str, fecha : str ) -> list[io
             return pdf_en_memoria_buffer
         
 
-def funcion_principal( pdf_path : str, output_dir : str, fecha : str, numero_archivo : int ) -> None:
+def funcion_principal( pdf_path : str, output_dir : str, fecha : str, numero_archivo : str ) -> None:
     
     lista_pdf_buffer = separar_paginas(pdf_path= pdf_path, output_dir= output_dir, fecha=fecha )
 
     # Comprimir todos los PDFs generados
-    zip_filename = f"/content/PROVEEDORES_{fecha}_{numero_archivo}.zip"
-    with zipfile.ZipFile(zip_filename, "w") as zipf:
-        for root, _, files_in_dir in os.walk(output_dir):
-            for file in files_in_dir:
-                zipf.write(os.path.join(root, file), arcname=file)
+    zip_filename = f"/content/PROVEEDORES_{fecha}_{ numero_archivo }.zip"
 
+    zip_buffer = io.BytesIO()
 
-    # Descargar el archivo ZIP
-    #files.download(zip_filename)
+    with zipfile.ZipFile(zip_buffer, "w") as zipf:
 
+        for elemento_buffer, nombre in lista_pdf_buffer:
+            elemento_buffer.seek(0)
+            zip_buffer.writestr( nombre, elemento_buffer.read() )
+    zip_buffer.seek(0)
+
+    return zip_buffer
