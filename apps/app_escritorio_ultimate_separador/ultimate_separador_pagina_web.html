@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>The Ultimate Separador (JS)</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body class="bg-light">
+
+<div class="container py-5">
+  <div class="card shadow-lg p-4">
+    <h2 class="mb-4 text-center">The Ultimate Sep (web)</h2>
+
+    <div class="mb-3">
+      <label class="form-label">Seleccionar PDF:</label>
+      <input type="file" id="pdfFile" class="form-control" accept="application/pdf">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Fecha:</label>
+      <input type="text" id="fecha" class="form-control" placeholder="DDMMYYYY">
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Numero de archivo:</label>
+      <input type="text" id="numero" class="form-control" placeholder="Ej: 02">
+    </div>
+
+    <button class="btn btn-success w-100" onclick="procesarPDF()">Generar ZIP</button>
+
+    <div id="status" class="mt-3 text-center text-muted"></div>
+  </div>
+</div>
+
+<script>
+// -------- Regex similar al Python ----------
+function extractTitular(text) {
+  const patrones = [
+    /UXILIAR DEL\s+Titular de la cuenta:\s*([A-Z\s]+)/,
+    /SA DE CV\s+Titular de la cuenta:\s*([A-Z\s]+)/,
+    /\nCREDITO\s+Titular de la cuenta:\s*([A-Z\s]+)/,
+    /\nCV\s+Titular de la cuenta:\s*([A-Z\s]+)/,
+    /DEL\s+Titular de la cuenta:\s*([A-Z\s]+)/
+  ];
+  for (let pat of patrones) {
+    const match = text.match(pat);
+    if (match) {
+      return match[1].trim().replace(/\s+/g, "_");
+    }
+  }
+  return null;
+}
+
+async function procesarPDF() {
+  const fileInput = document.getElementById('pdfFile');
+  const fecha = document.getElementById('fecha').value.trim();
+  const numero = document.getElementById('numero').value.trim();
+  const status = document.getElementById('status');
+
+  if (!fileInput.files[0] || !fecha || !numero) {
+    status.innerText = "⚠️ Todos los campos son obligatorios.";
+    return;
+  }
+
+  status.innerText = "Procesando PDF...";
+
+  const file = fileInput.files[0];
+  const arrayBuffer = await file.arrayBuffer();
+
+  // Cargar PDF con pdf.js para extraer texto
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+  const zip = new JSZip();
+
+  for (let i = 0; i < pdf.numPages; i++) {
+    const page = await pdf.getPage(i + 1);
+    const content = await page.getTextContent();
+    const text = content.items.map(item => item.str).join(" ");
+
+    let titular = extractTitular(text);
+    if (!titular) {
+      titular = `Desconocido_${i + 1}`;
+    }
+
+    const filename = `${fecha}_${titular}_${i + 1}.pdf`;
+
+    // Crear PDF individual con pdf-lib
+    const pdfDocOriginal = await PDFLib.PDFDocument.load(arrayBuffer);
+    const pdfDocNew = await PDFLib.PDFDocument.create();
+    const [pageCopy] = await pdfDocNew.copyPages(pdfDocOriginal, [i]);
+    pdfDocNew.addPage(pageCopy);
+    const pdfBytes = await pdfDocNew.save();
+
+    // Agregar al ZIP
+    zip.file(filename, pdfBytes);
+  }
+
+  // Generar ZIP
+  const zipBlob = await zip.generateAsync({ type: "blob" });
+  saveAs(zipBlob, `PROVEEDORES_${fecha}_${numero}.zip`);
+
+  status.innerText = "✅ ZIP generado correctamente.";
+}
+</script>
+
+</body>
+</html>
