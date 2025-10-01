@@ -1,84 +1,88 @@
+
+import tkinter as tk
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
-import os
-from codigo import funcion_principal
+import PyPDF2
+from codigo import funcion_principal  #importamos el archivo .py llamado codigo que contiene todas las funciones que definimos
 
-# Configuración inicial
-ctk.set_appearance_mode("light")  # "light" o "dark"
-ctk.set_default_color_theme("blue")  #  "green", "dark-blue"
+# ---------- Interfaz Gráfica ----------
+class PDFSplitterApp(ctk.CTk):
+    def __init__(self):
+        super().__init__()
 
-# ---------------------- FUNCIONES ----------------------
-def seleccionar_pdf():
-    archivo = filedialog.askopenfilename(
-        title="Seleccionar PDF",
-        filetypes=[("Archivos PDF", "*.pdf")]
-    )
-    if archivo:
-        entry_pdf.delete(0, "end")
-        entry_pdf.insert(0, archivo)
+        self.title("The ultimate separador de pagos")
+        self.geometry("600x400")
+        ctk.set_appearance_mode("dark")   # "light" o "dark"
+        ctk.set_default_color_theme("blue")  # también: "green", "dark-blue"
 
-def seleccionar_directorio():
-    carpeta = filedialog.askdirectory(title="Seleccionar carpeta de salida")
-    if carpeta:
-        entry_dir.delete(0, "end")
-        entry_dir.insert(0, carpeta)
+        # Variables
+        self.pdf_path = None
+        self.fecha_var = tk.StringVar()
+        self.numero_var = tk.StringVar()
 
-def ejecutar():
-    pdf_path = entry_pdf.get()
-    output_dir = entry_dir.get()
-    fecha = entry_fecha.get()
-    numero_archivo = entry_num.get()
+        # Widgets
+        self.create_widgets()
 
-    if not pdf_path or not output_dir or not fecha or not numero_archivo:
-        messagebox.showerror("Error", "Todos los campos son obligatorios.")
-        return
-    
-    try:
-        buffer_zip = funcion_principal(pdf_path, output_dir, fecha, numero_archivo)
+    def create_widgets(self):
+        title = ctk.CTkLabel(self, text="Dividir PDF y guardar como zip", font=("Arial", 22, "bold"))
+        title.pack(pady=20)
 
-        zip_filename = os.path.join(output_dir, f"PROVEEDORES_{fecha}_{numero_archivo}.zip")
-        with open(zip_filename, "wb") as f:
-            f.write(buffer_zip.getvalue())
+        # Botón para seleccionar PDF
+        self.pdf_button = ctk.CTkButton(self, text="Seleccionar PDF", command=self.seleccionar_pdf)
+        self.pdf_button.pack(pady=10)
 
-        messagebox.showinfo("Éxito", f"Archivo ZIP generado:\n{zip_filename}")
-    except Exception as e:
-        messagebox.showerror("Error", f"Ocurrió un error:\n{e}")
+        # Entrada de fecha
+        fecha_label = ctk.CTkLabel(self, text="Fecha (texto):")
+        fecha_label.pack()
+        fecha_entry = ctk.CTkEntry(self, textvariable=self.fecha_var, width=300)
+        fecha_entry.pack(pady=5)
 
-# ---------------------- INTERFAZ ----------------------
-app = ctk.CTk()
-app.title("The Ultimate Separador")
-app.geometry("600x400")
+        # Entrada de número de archivo
+        numero_label = ctk.CTkLabel(self, text="Numero de archivo (texto):")
+        numero_label.pack()
+        numero_entry = ctk.CTkEntry(self, textvariable=self.numero_var, width=300)
+        numero_entry.pack(pady=5)
 
-frame = ctk.CTkFrame(app, corner_radius=15)
-frame.pack(padx=20, pady=20, fill="both", expand=True)
+        # Botón para generar ZIP
+        self.zip_button = ctk.CTkButton(self, text="Generar ZIP", command=self.generar_zip)
+        self.zip_button.pack(pady=20)
 
-# Campos
-label_pdf = ctk.CTkLabel(frame, text="Seleccionar PDF:")
-label_pdf.grid(row=0, column=0, sticky="w", padx=10, pady=10)
-entry_pdf = ctk.CTkEntry(frame, width=300)
-entry_pdf.grid(row=0, column=1, padx=10)
-btn_pdf = ctk.CTkButton(frame, text="Buscar", command=seleccionar_pdf)
-btn_pdf.grid(row=0, column=2, padx=10)
+    def seleccionar_pdf(self):
+        file_path = filedialog.askopenfilename(filetypes=[("Archivo pdf", "*.pdf")])
+        if file_path:
+            self.pdf_path = file_path
+            messagebox.showinfo("Archivo seleccionado", f"Has seleccionado:\n{file_path}")
 
-label_dir = ctk.CTkLabel(frame, text="Carpeta de salida:")
-label_dir.grid(row=1, column=0, sticky="w", padx=10, pady=10)
-entry_dir = ctk.CTkEntry(frame, width=300)
-entry_dir.grid(row=1, column=1, padx=10)
-btn_dir = ctk.CTkButton(frame, text="Buscar", command=seleccionar_directorio)
-btn_dir.grid(row=1, column=2, padx=10)
+    def generar_zip(self):
+        if not self.pdf_path:
+            messagebox.showwarning("Error", "Debes seleccionar un PDF primero.")
+            return
 
-label_fecha = ctk.CTkLabel(frame, text="Fecha:")
-label_fecha.grid(row=2, column=0, sticky="w", padx=10, pady=10)
-entry_fecha = ctk.CTkEntry(frame, width=150)
-entry_fecha.grid(row=2, column=1, sticky="w", padx=10)
+        fecha = self.fecha_var.get().strip()
+        numero = self.numero_var.get().strip()
 
-label_num = ctk.CTkLabel(frame, text="Numero de archivo:")
-label_num.grid(row=3, column=0, sticky="w", padx=10, pady=10)
-entry_num = ctk.CTkEntry(frame, width=150)
-entry_num.grid(row=3, column=1, sticky="w", padx=10)
+        if not fecha or not numero:
+            messagebox.showwarning("Error", "Debes ingresar la fecha y el numero de archivo.")
+            return
 
-# Botón ejecutar
-btn_ejecutar = ctk.CTkButton(frame, text="Generar ZIP", command=ejecutar, fg_color="green", hover_color="darkgreen")
-btn_ejecutar.grid(row=4, column=0, columnspan=3, pady=20)
+        try:
+            zip_buffer = funcion_principal(self.pdf_path, fecha, numero)
 
-app.mainloop()
+            # Guardar ZIP en disco
+            save_path = filedialog.asksaveasfilename(
+                defaultextension=".zip",
+                filetypes=[("ZIP files", "*.zip")],
+                initialfile=f"PROVEEDORES_{fecha}_{numero}.zip"
+            )
+
+            if save_path:
+                with open(save_path, "wb") as f:
+                    f.write(zip_buffer.getvalue())
+                messagebox.showinfo("Éxito", f"ZIP guardado en:\n{save_path}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Ocurrió un error:\n{str(e)}")
+
+# Ejecutar la app
+if __name__ == "__main__":
+    app = PDFSplitterApp()
+    app.mainloop()

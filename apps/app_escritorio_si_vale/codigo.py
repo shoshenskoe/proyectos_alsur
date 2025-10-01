@@ -12,7 +12,7 @@ def obtener_dfsucio(excel_path):
     dfsucio = pd.read_excel(excel_path, skiprows=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
 
     return dfsucio
-
+    
 def obtener_df ( df_sucio ):
 
     df=df_sucio[(df["IVA"]!=0) & (df_sucio["Importe"]!=0) & (df_sucio["Cargo"]!=0)].copy()
