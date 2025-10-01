@@ -43,9 +43,24 @@ def obtener_df ( df_sucio ):
 
     return df
 
-def hacer_verficacion(df ):
 
-# verificacion
+#####aqui empezamos el proceso de verificacion , es un esbozo!!!!!
+def nombres_faltantes( df_faltantes):
+
+    lista_nombres = df_faltantes["Nombre Empleado"].tolist()
+
+    return lista_nombres
+
+def rellenar_cc( df_faltantes, lista_nombres, lista_cc):
+
+    return 0
+
+
+##################aqui termina el esbozo
+
+def hacer_verficacion(df, dic_nombre_cc=None):
+
+    # verificacion
 
     datos_faltantes=df[df["CC"].isnull()]
 
@@ -62,7 +77,28 @@ def hacer_verficacion(df ):
             S=pd.Series({"CC":centro,"Nombre Empleado":datos_faltantes["Nombre Empleado"][i]})
             df3=pd.concat([df3, S.to_frame().T], ignore_index=True)
 
-    return df3
+
+
+    return df, df3
+
+
+###asumimos que el diccionario es proporcionado por el usuario
+##y no es nulo 
+#input: df, diccionario con nombre y cc y faltantes; df_empleados_cc es la relacion
+#de empleados y cc que se extrae del archivo de Google drive
+##output: df con cc rellenados y df_empleados_cc el df con los faltantes
+def hacer_verficiacion_v2(df, dic_nombre_cc: dict[str, str], df_empleados_cc):
+    for i in range(len(df)):
+        nombre = df.loc[i, "Nombre Empleado"]
+        if nombre in dic_nombre_cc:
+            centro = dic_nombre_cc[nombre] #pedimos el valor de la llave nombre
+            df.loc[i, "CC"] = centro.upper()
+
+            #ahora anadimos a df3 para crear una tabla con los faltantes
+            S=pd.Series({"CC":centro,"Nombre Empleado": nombre })
+            df_empleados_cc = pd.concat([df_empleados_cc, S.to_frame().T], ignore_index=True)
+            
+    return df, df_empleados_cc
 
 def verificar_no_camiones(df3):
 

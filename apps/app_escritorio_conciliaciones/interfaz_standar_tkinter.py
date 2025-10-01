@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
-from conciliaciones import ejecucion_programa
+from conciliaciones_codigo_sin_fecha import ejecucion_programa
 
 def seleccionar_archivo_banco():
     ruta = filedialog.askopenfilename(filetypes=[("Archivos PDF", "*.pdf")])

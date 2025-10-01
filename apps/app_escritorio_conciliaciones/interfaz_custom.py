@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from tkinter import filedialog, messagebox
-from conciliaciones import ejecucion_programa
+from conciliaciones_codigo_sin_fecha import ejecucion_programa
 
 # ===================== CONFIG GLOBAL =====================
 ctk.set_appearance_mode("system")   # "light", "dark" o "system"
