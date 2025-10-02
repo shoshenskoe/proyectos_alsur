@@ -111,6 +111,12 @@ def verificar_no_camiones(df3):
 
     return df3
 
+def guardar_en_base_empleados_drive( df3):
+    df3.to_excel("/content/drive/MyDrive/Si Vale Gasolina Empleados y cc/Base si vale gasolina.xlsx", index= False)
+    enlace = r"https://drive.google.com/drive/folders/172IVSmCSHNfAzATjhLq641FAnWdN2PFr?usp=sharing"
+    df3
+    return None
+
 def crear_segunda_tabla_din( df ):
 
 
