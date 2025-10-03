@@ -359,7 +359,7 @@ def logica_principal( path_archivo_excel ):
 
     df= obtener_df(dfsucio)
 
-    """# verificación"""
+    # verificacion
 
     df = hacer_verficacion(df)
 
