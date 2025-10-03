@@ -111,11 +111,15 @@ def verificar_no_camiones(df3):
 
     return df3
 
-def guardar_en_base_empleados_drive( df3):
-    df3.to_excel("/content/drive/MyDrive/Si Vale Gasolina Empleados y cc/Base si vale gasolina.xlsx", index= False)
-    enlace = r"https://drive.google.com/drive/folders/172IVSmCSHNfAzATjhLq641FAnWdN2PFr?usp=sharing"
+def guardar_en_base_empleados_drive( df3 ):
+   
+    enlace = r"https://drive.google.com/drive/folders/172IVSmCSHNfAzATjhLq641FAnWdN2PFr?usp=sharing/Base si vale gasolina_prueba.xlsx"
+    df3.to_excel(enlace, index= False)
     df3
     return None
+
+
+#####empieza segunda tabla dinamica y poliza
 
 def crear_segunda_tabla_din( df ):
 
@@ -123,14 +127,14 @@ def crear_segunda_tabla_din( df ):
     df[["Cargo","Importe","IVA"]]=df[["Cargo","Importe","IVA"]].astype("float64")
     #df=df.round(0)
 
-    df4=df.copy()
-    df4["CC"]=df4["CC"].str.upper()
-    df4=df4.groupby("CC").sum()
+    df["CC"]=df["CC"].str.upper()
+    df4=df.groupby("CC").sum() #aqui se agrupa por cc y se elimina totAL de df
 
 
     df4=df4.reset_index()
     #df4=df4.append({"CC":"Total","Cargo":df4.Cargo.sum(),"Importe": df4.Importe.sum(),"IVA":df4.IVA.sum()}, ignore_index=True)
-    S=pd.Series({"CC":"Total","Cargo":df4.Cargo.sum(),"Importe": df4.Importe.sum(),"IVA":df4.IVA.sum()}) # con esto resume la tabla en el ultimo renglon
+    # con lo siguiente se resume la tabla en el ultimo renglon
+    S=pd.Series({"CC":"Total","Cargo":df4.Cargo.sum(),"Importe": df4.Importe.sum(),"IVA":df4.IVA.sum()})
     df4=pd.concat([df4, S.to_frame().T], ignore_index=True) #anade al dataframe el renglon resumen
     df4["Cargo"]=df4.Cargo.astype('float')
     df4["IVA"]=df4.IVA.astype('float')
@@ -141,6 +145,8 @@ def crear_segunda_tabla_din( df ):
     return df4
 
 
+
+######
 def obtener_utilitario(enlace_path):
 
     utilitario= pd.read_excel(enlace_path)
@@ -148,6 +154,8 @@ def obtener_utilitario(enlace_path):
 
     return utilitario
 
+
+##aqui ya tenemo el df para poliza
 def enlazar_con_utilitario( df_parapoliza, utilitario):
     df_parapoliza['CC']=df_parapoliza['CC'].str.strip()
     df_parapoliza=pd.merge(df_parapoliza,utilitario, on=["CC"], how="left")
@@ -157,6 +165,7 @@ def enlazar_con_utilitario( df_parapoliza, utilitario):
     return df_parapoliza
 
 
+##verificamos si hay datos faltantes el df de poliza
 def verificar_faltantes (df_parapoliza):
 
     datos_faltantes=df_parapoliza[df_parapoliza["UTILITARIO"].isnull()]
@@ -170,7 +179,7 @@ def verificar_faltantes (df_parapoliza):
 ###esta funcion pide los datos faltantes y los
 # anade al df de poliza y al df de utilitario
 
-def completar_utilitario1 ( df_parapoliza, utilitario) :
+def completar_utilitario1 ( df_parapoliza, utilitario, diccionario=None) :
     
     datos_faltantes=df_parapoliza[df_parapoliza["UTILITARIO"].isnull()]
     datos_faltantes=datos_faltantes.reset_index()
@@ -182,21 +191,28 @@ def completar_utilitario1 ( df_parapoliza, utilitario) :
 
             j=datos_faltantes["index"][i]
             
-            uti=input("Introduzca el centro utilitario de "+str(datos_faltantes["CC"][i]) )
+            utilitario = diccionario.get( datos_faltantes["CC"][i], None)
 
-            uti=uti.upper()
 
-            df_parapoliza.loc[j,"UTILITARIO"]=uti #aqui rellena el df para poliza
+            utilitario=utilitario.upper()
 
-            S=pd.Series({"CC":datos_faltantes["CC"][i],"UTILITARIO": uti })
+
+            ####### aqui rellena el df para poliza, revisasr el indice!!
+            df_parapoliza.loc[j,"UTILITARIO"]=utilitario #aqui rellena el df para poliza
+
+            S=pd.Series({"CC":datos_faltantes["CC"][i],"UTILITARIO": utilitario })
 
             utilitario=pd.concat([utilitario, S.to_frame().T], ignore_index=True)
-            enlace = "https://drive.google.com/drive/folders/172IVSmCSHNfAzATjhLq641FAnWdN2PFr?usp=sharing"
-            utilitario.to_excel(enlace, index= False)
+
+    return df_parapoliza, utilitario
 
 
-
-    return df_parapoliza
+###esta funcion es posible mejorarla, simplemente la esbozamos
+def guardar_en_base_utilitario_drive( utilitario ):
+   
+    enlace = r"https://drive.google.com/drive/folders/172IVSmCSHNfAzATjhLq641FAnWdN2PFr?usp=sharing/CC y utilitario_pruba.xlsx"
+    utilitario.to_excel(enlace, index= False)
+    return None
 
 
 
@@ -222,17 +238,14 @@ def completar_utilitario(df_parapoliza, utilitario, respuestas: dict):
             if cc not in respuestas:
                 raise ValueError(f"No se proporcionó utilitario para {cc}")
 
-            uti = respuestas[cc].upper()
+            utilitario = respuestas[cc].upper()
 
             # Actualizamos el df original
-            df_parapoliza.loc[j, "UTILITARIO"] = uti
+            df_parapoliza.loc[j, "UTILITARIO"] = utilitario
 
             # Guardamos en tabla auxiliar
-            S = pd.Series({"CC": cc, "UTILITARIO": uti})
+            S = pd.Series({"CC": cc, "UTILITARIO": utilitario})
             utilitario = pd.concat([utilitario, S.to_frame().T], ignore_index=True)
-
-            enlace = "https://drive.google.com/drive/folders/172IVSmCSHNfAzATjhLq641FAnWdN2PFr?usp=sharing"
-            utilitario.to_excel(enlace, index= False)
 
 
     return df_parapoliza, utilitario
@@ -248,7 +261,9 @@ def completar_utilitario(df_parapoliza, utilitario, respuestas: dict):
 
 
 
-def hacer_poliza_final( df_parapoliza, Referencia): 
+
+
+def hacer_poliza_final( df_parapoliza, Referencia : str ): 
 
     # Empecemos a definr las ctas contables que usaremos de acuerdo al catalogo de cuentas
 
