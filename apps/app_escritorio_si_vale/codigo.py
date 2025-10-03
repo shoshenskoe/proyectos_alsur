@@ -15,7 +15,7 @@ def obtener_dfsucio(excel_path):
     
 def obtener_df ( df_sucio ):
 
-    df=df_sucio[(df["IVA"]!=0) & (df_sucio["Importe"]!=0) & (df_sucio["Cargo"]!=0)].copy()
+    df=df_sucio[(df_sucio["IVA"]!=0) & (df_sucio["Importe"]!=0) & (df_sucio["Cargo"]!=0)].copy()
     df=df.reset_index()
     df=df.drop('index',axis=1)
     df=df[["Nombre\nEmpleado","Cargo","Importe","IVA"]]
@@ -148,10 +148,8 @@ def crear_segunda_tabla_din( df ):
 
 ######
 def obtener_utilitario(enlace_path):
-
+    
     utilitario= pd.read_excel(enlace_path)
-
-
     return utilitario
 
 
@@ -353,7 +351,9 @@ def elaborar_excel_poliza(dfsucio, df, df4, df_parapoliza ):
 
     return archivo_buffer
 
-def logica_principal( path_archivo_excel, path_base_sivale ):
+
+path_archivo_excel = r"C:\Users\SALCIDOA\Downloads\archivo_para_probar_si_vale.xlsx"
+def logica_principal( path_archivo_excel ):
 
     dfsucio = obtener_dfsucio(path_archivo_excel)
 
