@@ -38,8 +38,9 @@ def obtener_df ( df_sucio ):
 def crear_tabla_con_cc_vacia(df):
 
     
-    enlace= "https://docs.google.com/spreadsheets/d/1Iy68cztYlqI6fLjE8l4s2D32BQLzUZG9/edit?usp=sharing&ouid=111113060171554295483&rtpof=true&sd=true"
-    df2=pd.read_excel(enlace)
+    enlace = "https://docs.google.com/spreadsheets/d/1Iy68cztYlqI6fLjE8l4s2D32BQLzUZG9/export?format=xlsx"
+
+    df2 = pd.read_excel(enlace)
 
     # @title Texto de título predeterminado
     df=pd.merge( df, df2, on='Nombre Empleado', how='left')
