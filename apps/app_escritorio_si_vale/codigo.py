@@ -12,7 +12,9 @@ def obtener_dfsucio(excel_path):
     dfsucio = pd.read_excel(excel_path, skiprows=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
 
     return dfsucio
-    
+
+#imita una tabla dinamica de excel. Trae empleado, cargo, importe e iva
+#input: df sucio   
 def obtener_df ( df_sucio ):
 
     df=df_sucio[(df_sucio["IVA"]!=0) & (df_sucio["Importe"]!=0) & (df_sucio["Cargo"]!=0)].copy()
@@ -23,7 +25,7 @@ def obtener_df ( df_sucio ):
 
     """Hasta aquí ya tenemos la tabla lista y limpia para seguir con el proceso que marca el manual de ángel."""
 
-    # Proceso que imita la primera  tabla dinámica
+    # Proceso que imita la primera  tabla dinamica
 
     df=df.groupby(['Nombre Empleado']).sum()
     df=df.reset_index()
@@ -32,6 +34,11 @@ def obtener_df ( df_sucio ):
     S=pd.Series({"Nombre Empleado":"Total", "Importe": df.Importe.sum(),"Cargo":df.Cargo.sum(),"IVA":df.IVA.sum()})
     df=pd.concat([df, S.to_frame().T], ignore_index=True)
 
+    return df
+
+def crear_tabla_con_cc_vacia(df):
+
+    
     enlace= "https://docs.google.com/spreadsheets/d/1Iy68cztYlqI6fLjE8l4s2D32BQLzUZG9/edit?usp=sharing&ouid=111113060171554295483&rtpof=true&sd=true"
     df2=pd.read_excel(enlace)
 
@@ -39,6 +46,7 @@ def obtener_df ( df_sucio ):
     df=pd.merge( df, df2, on='Nombre Empleado', how='left')
 
     df=df.reindex(["CC","Nombre Empleado","Cargo","Importe","IVA"],axis=1)
+
 
 
     return df
@@ -91,7 +99,9 @@ def hacer_verficiacion_v2(df, dic_nombre_cc: dict[str, str], df_empleados_cc):
     for i in range(len(df)):
         nombre = df.loc[i, "Nombre Empleado"]
         if nombre in dic_nombre_cc:
-            centro = dic_nombre_cc[nombre] #pedimos el valor de la llave nombre
+            #pedimos el valor de la llave nombre
+            centro = dic_nombre_cc[nombre] 
+            #rellenamos el df original con lo que nos dio el usuario
             df.loc[i, "CC"] = centro.upper()
 
             #ahora anadimos a df3 para crear una tabla con los faltantes
@@ -100,18 +110,19 @@ def hacer_verficiacion_v2(df, dic_nombre_cc: dict[str, str], df_empleados_cc):
             
     return df, df_empleados_cc
 
-def verificar_no_camiones(df3):
+
+
+def obterner_df_no_camiones(df3):
 
     camiones= ['TRAILER 001','TRAILER 002', 'TRAILER 004', 'TRAILER 05' ]
     df3=df3[~ df3['Nombre Empleado'].isin(camiones) ]
     df3=df3.reset_index(drop=True)
-    #df3.to_excel("/content/drive/MyDrive/Si Vale Gasolina Empleados y cc/Base si vale gasolina.xlsx", index= False)
-
-    #df3.to_excel("/content/drive/MyDrive/Si Vale Gasolina Empleados y cc/Base si vale gasolina.xlsx", index= False)
-
     return df3
 
-def guardar_en_base_empleados_drive( df3 ):
+
+##esta funcion tiene que ser mas elaborada
+##esto es solamente un esbozo
+def guardar_base_empleados_drive( df3 ):
    
     enlace = r"https://drive.google.com/drive/folders/172IVSmCSHNfAzATjhLq641FAnWdN2PFr?usp=sharing/Base si vale gasolina_prueba.xlsx"
     df3.to_excel(enlace, index= False)
@@ -120,7 +131,9 @@ def guardar_en_base_empleados_drive( df3 ):
 
 
 #####empieza segunda tabla dinamica y poliza
-
+#esta tabla es una tabla dinamica que agrupa por cc
+#muestra cargo, importe e iva
+#el ultimo renglon es el total
 def crear_segunda_tabla_din( df ):
 
 
@@ -128,7 +141,9 @@ def crear_segunda_tabla_din( df ):
     #df=df.round(0)
 
     df["CC"]=df["CC"].str.upper()
-    df4=df.groupby("CC").sum() #aqui se agrupa por cc y se elimina totAL de df
+    
+     #aqui se agrupa por cc y se elimina totAL de df
+    df4=df.groupby("CC").sum()
 
 
     df4=df4.reset_index()
@@ -154,16 +169,21 @@ def obtener_utilitario(enlace_path):
 
 
 ##aqui ya tenemo el df para poliza
+#ubicamos el utilitario de acuerdo al cc
+#input: df de poliza y df de utilitario
+#output: df de poliza con utilitario
+
 def enlazar_con_utilitario( df_parapoliza, utilitario):
     df_parapoliza['CC']=df_parapoliza['CC'].str.strip()
     df_parapoliza=pd.merge(df_parapoliza,utilitario, on=["CC"], how="left")
 
+    #reemplazamos un CC especial que sera el total
     df_parapoliza['CC']=df_parapoliza['CC'].replace("Total", "E913")
 
     return df_parapoliza
 
 
-##verificamos si hay datos faltantes el df de poliza
+##verificamos si hay datos faltantes en el df de poliza
 def verificar_faltantes (df_parapoliza):
 
     datos_faltantes=df_parapoliza[df_parapoliza["UTILITARIO"].isnull()]
@@ -172,6 +192,15 @@ def verificar_faltantes (df_parapoliza):
         boleano = True
 
     return boleano
+
+def obtener_faltantes_utilitario ( df_parapoliza):
+    datos_faltantes=df_parapoliza[df_parapoliza["UTILITARIO"].isnull()]
+
+    if ( datos_faltantes.empty):
+        return []
+    else:
+        lista_cc = datos_faltantes["CC"].tolist()
+        return lista_cc
 
 
 ###esta funcion pide los datos faltantes y los
@@ -183,6 +212,8 @@ def completar_utilitario1 ( df_parapoliza, utilitario, diccionario=None) :
     datos_faltantes=datos_faltantes.reset_index()
     #datos_faltantes
 
+    #recorremos los datos faltantes 
+    # menos el ultimo renglon que es el total
     for i in range (len(datos_faltantes)-1):
 
         if datos_faltantes["CC"][i]!="E913":
@@ -195,8 +226,9 @@ def completar_utilitario1 ( df_parapoliza, utilitario, diccionario=None) :
             utilitario=utilitario.upper()
 
 
-            ####### aqui rellena el df para poliza, revisasr el indice!!
-            df_parapoliza.loc[j,"UTILITARIO"]=utilitario #aqui rellena el df para poliza
+            ####### aqui rellena el df para poliza, revisar el indice!!
+             #aqui rellena el df para poliza
+            df_parapoliza.loc[j,"UTILITARIO"]=utilitario
 
             S=pd.Series({"CC":datos_faltantes["CC"][i],"UTILITARIO": utilitario })
 
@@ -210,7 +242,7 @@ def guardar_en_base_utilitario_drive( utilitario ):
    
     enlace = r"https://drive.google.com/drive/folders/172IVSmCSHNfAzATjhLq641FAnWdN2PFr?usp=sharing/CC y utilitario_pruba.xlsx"
     utilitario.to_excel(enlace, index= False)
-    return None
+    return utilitario
 
 
 
@@ -259,7 +291,7 @@ def completar_utilitario(df_parapoliza, utilitario, respuestas: dict):
 
 
 
-
+######funcion para crear la poliza final
 
 def hacer_poliza_final( df_parapoliza, Referencia : str ): 
 
@@ -353,36 +385,56 @@ def elaborar_excel_poliza(dfsucio, df, df4, df_parapoliza ):
 
 
 path_archivo_excel = r"C:\Users\SALCIDOA\Downloads\archivo_para_probar_si_vale.xlsx"
+
+
 def logica_principal( path_archivo_excel ):
 
     dfsucio = obtener_dfsucio(path_archivo_excel)
 
+    #la funcion obtener df imita una tabla dinamica de excel
     df= obtener_df(dfsucio)
 
+    tabla_incompleta = crear_tabla_con_cc_vacia(df)
+
+    path_centro_util = "https://docs.google.com/spreadsheets/d/1gnfLiD1arrr5G7seQi85-f3Cd5n7_miS/edit?usp=sharing&ouid=111113060171554295483&rtpof=true&sd=true"
+    utilitario = obtener_utilitario(path_centro_util)
+
     # verificacion
+    df, df_empleados_cc = hacer_verficiacion_v2( df= tabla_incompleta, 
+                              dic_nombre_cc = diccionario_usuario, 
+                              df_empleados_cc= utilitario)
+    
+    
+    df3 = obterner_df_no_camiones ( df_empleados_cc )
 
-    df = hacer_verficacion(df)
+    guardar_base_empleados_drive( df3 )
 
-    df3 = verificar_no_camiones(df)
+    ##iniciamos segunda tabla dinamica y poliza
 
     # Segunda tabla dinámica y poliza
 
     df4 = crear_segunda_tabla_din(df)
     
-    path_centro_util = "https://docs.google.com/spreadsheets/d/1gnfLiD1arrr5G7seQi85-f3Cd5n7_miS/edit?usp=sharing&ouid=111113060171554295483&rtpof=true&sd=true"
+    path_cc_utilitario = r"https://docs.google.com/spreadsheets/d/1gnfLiD1arrr5G7seQi85-f3Cd5n7_miS/edit?usp=sharing&ouid=111113060171554295483&rtpof=true&sd=true"
     utilitario = obtener_utilitario(path_centro_util)
 
     df_parapoliza = enlazar_con_utilitario(df4, utilitario)
 
-    booleano = verificar_faltantes(df_parapoliza)
+    #lista_cc_faltantes = obtener_faltantes_utilitario(df4)
 
-    if (booleano== True):
-        df_parapoliza,_ = completar_utilitario(df_parapoliza,utilitario)
+    df_poliza , utilitario= completar_utilitario ( df4, utilitario, diccionario_usuario2 )
 
-    df_parapoliza = hacer_poliza_final(df_parapoliza)
+    guardar_en_base_utilitario_drive( utilitario )
 
-    archivo_excel_buffer = elaborar_excel_poliza(dfsucio= dfsucio, 
-                          df= df, 
-                          df_parapoliza= df_parapoliza)
+    
+    df_poliza = hacer_poliza_final(df_parapoliza, Referencia=Referencia)
 
+     # creamos un objeto de buffer
+    archivo_excel_buffer = BytesIO()
+
+    #creamos el archivo excel con las 4 hojas como se indica en google
+    #colab
+    archivo_excel_buffer = elaborar_excel_poliza(dfsucio, df, df4, df_poliza)
+
+    
     return archivo_excel_buffer
