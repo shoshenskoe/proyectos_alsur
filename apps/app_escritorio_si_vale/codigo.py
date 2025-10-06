@@ -7,7 +7,6 @@ from io import BytesIO
 #input : path de excel
 #limpia algunos renglones
 #ouput: dataframe pandas 
-
 def obtener_dfsucio(excel_path):
     dfsucio = pd.read_excel(excel_path, skiprows=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15])
 
@@ -122,11 +121,10 @@ def obterner_df_no_camiones(df3):
 
 ##esta funcion tiene que ser mas elaborada
 ##esto es solamente un esbozo
-def guardar_base_empleados_drive( df3 ):
+def guardar_en_drive( df3 ):
    
     enlace = r"https://drive.google.com/drive/folders/172IVSmCSHNfAzATjhLq641FAnWdN2PFr?usp=sharing/Base si vale gasolina_prueba.xlsx"
-    df3.to_excel(enlace, index= False)
-    df3
+    #df3.to_excel(enlace, index= False)
     return None
 
 
@@ -235,15 +233,6 @@ def completar_utilitario1 ( df_parapoliza, utilitario, diccionario=None) :
             utilitario=pd.concat([utilitario, S.to_frame().T], ignore_index=True)
 
     return df_parapoliza, utilitario
-
-
-###esta funcion es posible mejorarla, simplemente la esbozamos
-def guardar_en_base_utilitario_drive( utilitario ):
-   
-    enlace = r"https://drive.google.com/drive/folders/172IVSmCSHNfAzATjhLq641FAnWdN2PFr?usp=sharing/CC y utilitario_pruba.xlsx"
-    utilitario.to_excel(enlace, index= False)
-    return utilitario
-
 
 
 def completar_utilitario(df_parapoliza, utilitario, respuestas: dict):
@@ -387,7 +376,7 @@ def elaborar_excel_poliza(dfsucio, df, df4, df_parapoliza ):
 path_archivo_excel = r"C:\Users\SALCIDOA\Downloads\archivo_para_probar_si_vale.xlsx"
 
 
-def logica_principal( path_archivo_excel ):
+def logica_principal( path_archivo_excel , diccionario_usuario1 , diccionario_usuario2, Referencia:str ):
 
     dfsucio = obtener_dfsucio(path_archivo_excel)
 
@@ -397,17 +386,21 @@ def logica_principal( path_archivo_excel ):
     tabla_incompleta = crear_tabla_con_cc_vacia(df)
 
     path_centro_util = "https://docs.google.com/spreadsheets/d/1gnfLiD1arrr5G7seQi85-f3Cd5n7_miS/edit?usp=sharing&ouid=111113060171554295483&rtpof=true&sd=true"
-    utilitario = obtener_utilitario(path_centro_util)
+    centros_costos = obtener_utilitario(path_centro_util)
 
     # verificacion
+    #el diccionariodiccionario_usuario1 guarda el cc y el nombre de los empleados
+    #que el usuario debe completar
     df, df_empleados_cc = hacer_verficiacion_v2( df= tabla_incompleta, 
-                              dic_nombre_cc = diccionario_usuario, 
-                              df_empleados_cc= utilitario)
+                              dic_nombre_cc = diccionario_usuario1, 
+                              df_empleados_cc= centros_costos )
     
     
+    #df3 guarda el utilitario con los cc y los nombres de 
+    # los empleados que hacen falta y no son camiones
     df3 = obterner_df_no_camiones ( df_empleados_cc )
 
-    guardar_base_empleados_drive( df3 )
+    guardar_en_drive( df3 )
 
     ##iniciamos segunda tabla dinamica y poliza
 
@@ -422,9 +415,11 @@ def logica_principal( path_archivo_excel ):
 
     #lista_cc_faltantes = obtener_faltantes_utilitario(df4)
 
+    #se completa la poliza y el utilitario con los cc y los nombres de los empleados que el usuario debe completar
+    #con el diccionario diccionario_usuario1
     df_poliza , utilitario= completar_utilitario ( df4, utilitario, diccionario_usuario2 )
 
-    guardar_en_base_utilitario_drive( utilitario )
+    guardar_en_drive( utilitario )
 
     
     df_poliza = hacer_poliza_final(df_parapoliza, Referencia=Referencia)
