@@ -53,9 +53,9 @@ def crear_tabla_con_cc_vacia(df):
 
 
 #####aqui empezamos el proceso de verificacion , es un esbozo!!!!!
-def nombres_faltantes( df_faltantes):
-
-    lista_nombres = df_faltantes["Nombre Empleado"].tolist()
+def nombres_faltantes( df_sin_cc):
+    datos_faltantes=df_sin_cc[df_sin_cc["CC"].isnull()]
+    lista_nombres = datos_faltantes["Nombre Empleado"].tolist()
 
     return lista_nombres
 
@@ -182,15 +182,7 @@ def enlazar_con_utilitario( df_parapoliza, utilitario):
     return df_parapoliza
 
 
-##verificamos si hay datos faltantes en el df de poliza
-def verificar_faltantes (df_parapoliza):
 
-    datos_faltantes=df_parapoliza[df_parapoliza["UTILITARIO"].isnull()]
-    boleano = False
-    if ( datos_faltantes.empty):
-        boleano = True
-
-    return boleano
 
 def obtener_faltantes_utilitario ( df_parapoliza):
     datos_faltantes=df_parapoliza[df_parapoliza["UTILITARIO"].isnull()]
@@ -207,8 +199,8 @@ def obtener_faltantes_utilitario ( df_parapoliza):
 
 def completar_utilitario1 ( df_parapoliza, utilitario, diccionario=None) :
     
-    datos_faltantes=df_parapoliza[df_parapoliza["UTILITARIO"].isnull()]
-    datos_faltantes=datos_faltantes.reset_index()
+    datos_faltantes = df_parapoliza[df_parapoliza["UTILITARIO"].isnull()]
+    datos_faltantes = datos_faltantes.reset_index()
     #datos_faltantes
 
     #recorremos los datos faltantes 
@@ -217,21 +209,23 @@ def completar_utilitario1 ( df_parapoliza, utilitario, diccionario=None) :
 
         if datos_faltantes["CC"][i]!="E913":
 
-            j=datos_faltantes["index"][i]
+            indice_df_parapoliza = int( datos_faltantes["index"][i] )
             
-            utilitario = diccionario.get( datos_faltantes["CC"][i], None)
+            cod_util = diccionario.get( datos_faltantes["CC"][i], None)
 
 
-            utilitario=utilitario.upper()
+            cod_util=cod_util.upper()
 
 
             ####### aqui rellena el df para poliza, revisar el indice!!
              #aqui rellena el df para poliza
-            df_parapoliza.loc[j,"UTILITARIO"]=utilitario
+            df_parapoliza.loc[indice_df_parapoliza,"UTILITARIO"]=cod_util
 
-            S=pd.Series({"CC":datos_faltantes["CC"][i],"UTILITARIO": utilitario })
+            renglon=pd.Series({"CC":datos_faltantes["CC"][i],"UTILITARIO": cod_util })
+            
+            renglon = renglon.to_frame().T
 
-            utilitario=pd.concat([utilitario, S.to_frame().T], ignore_index=True)
+            utilitario=pd.concat( utilitario, renglon , ignore_index=True)
 
     return df_parapoliza, utilitario
 
@@ -383,44 +377,105 @@ def logica_principal( path_archivo_excel , diccionario_usuario1 , diccionario_us
 
     #la funcion obtener df imita una tabla dinamica de excel
     df= obtener_df(dfsucio)
+    df.reset_index(inplace=True)
 
+    #es la misma tabla que la primera pero posiblemente con cc vacias
     tabla_incompleta = crear_tabla_con_cc_vacia(df)
 
-    path_centro_util = "https://docs.google.com/spreadsheets/d/1gnfLiD1arrr5G7seQi85-f3Cd5n7_miS/edit?usp=sharing&ouid=111113060171554295483&rtpof=true&sd=true"
+    #obtenemos los nombres de los empleados que tienen cc vacias
+    nombre_empleados_sin_cc = nombres_faltantes(tabla_incompleta)
+
+    #quitamos el total de la lista nombre_empleados_sin_cc
+    nombre_empleados_sin_cc = nombre_empleados_sin_cc[:-1]
+
+    #almacenamos los centros de costos en un dataframe
+    #posiblemente este paso sea redundante
+    #  con la funcion crear_tabla_con_cc_vacia
+    path_centro_util = "https://docs.google.com/spreadsheets/d/1Iy68cztYlqI6fLjE8l4s2D32BQLzUZG9/export?format=xlsx"
     centros_costos = obtener_utilitario(path_centro_util)
 
-    # verificacion
-    #el diccionariodiccionario_usuario1 guarda el cc y el nombre de los empleados
-    #que el usuario debe completar
-    df, df_empleados_cc = hacer_verficiacion_v2( df= tabla_incompleta, 
-                              dic_nombre_cc = diccionario_usuario1, 
-                              df_empleados_cc= centros_costos )
+    #si la lista de los empleados no es vacia se completa el diccionario
+    if nombre_empleados_sin_cc:
+        diccionario_nombre_cc = {nombre: "" for nombre in nombre_empleados_sin_cc}
+        
+        for empleado in nombre_empleados_sin_cc:
+            cc = input(f"Introduzca el CC de {empleado}: ")
+            diccionario_nombre_cc[empleado] = str(cc).upper()
+
+
+        #obtenemos el df con los cc completos
+        # El df_empleados_cc es el df con los empleados que tienen cc vacias
+        df, df_empleados_cc = hacer_verficiacion_v2(df=tabla_incompleta, 
+                                                    dic_nombre_cc=diccionario_nombre_cc, 
+                                                    df_empleados_cc= centros_costos)
     
-    
+
+
     #df3 guarda el utilitario con los cc y los nombres de 
     # los empleados que hacen falta y no son camiones
     df3 = obterner_df_no_camiones ( df_empleados_cc )
 
-    guardar_en_drive( df3 )
+    #guardar_en_drive( df3 )
 
     ##iniciamos segunda tabla dinamica y poliza
 
     # Segunda tabla dinámica y poliza
 
     df4 = crear_segunda_tabla_din(df)
-    
-    path_cc_utilitario = r"https://docs.google.com/spreadsheets/d/1gnfLiD1arrr5G7seQi85-f3Cd5n7_miS/edit?usp=sharing&ouid=111113060171554295483&rtpof=true&sd=true"
-    utilitario = obtener_utilitario(path_centro_util)
 
+
+    #leemos el csv en Drive que relaciona el centro de costos y el utilitario
+    #lo convertimos en un dataframe de pandas
+    path_cc_utilitario = "https://docs.google.com/spreadsheets/d/1gnfLiD1arrr5G7seQi85-f3Cd5n7_miS/export?format=csv&gid=1471990202"
+    utilitario = pd.read_csv(path_cc_utilitario)
+
+    #relacionamos con un left join los dataframe df4 que es la tabla dinamica y 
+    #la tabla del utilitario. d4 son totales de los centros de costos
     df_parapoliza = enlazar_con_utilitario(df4, utilitario)
 
-    #lista_cc_faltantes = obtener_faltantes_utilitario(df4)
+    #df_parapoliza contiene ahora utilitario, cc , cargo, importe e IVA 
+    #el utilitario puede ser vacio NaN y es necesario completarlos
 
-    #se completa la poliza y el utilitario con los cc y los nombres de los empleados que el usuario debe completar
-    #con el diccionario diccionario_usuario1
-    df_poliza , utilitario= completar_utilitario ( df4, utilitario, diccionario_usuario2 )
+    lista_utilitario_faltantes = obtener_faltantes_utilitario(df_parapoliza)
 
-    guardar_en_drive( utilitario )
+    #quitamos de la lista anterior el CC E913 por corresponder al total
+    #y no tener un utilitario asociado. Se elimina la ultima entrada
+    lista_utilitario_faltantes = lista_utilitario_faltantes[:-1]
+
+
+
+     #si la lista de los utilitarios falntaes
+     #no es vacia se completa el diccionario
+    if lista_utilitario_faltantes:
+        diccionario_util_cc = {CC: "" for CC in lista_utilitario_faltantes}
+        
+        for cc in diccionario_util_cc:
+            util = input(f"Introduzca el utilitario de {cc}: ")
+            diccionario_util_cc[cc] = str(util).upper()
+
+        #se completa la poliza y el utilitario con los cc y los nombres de los empleados que el usuario debe completar
+        #con el diccionario diccionario_usuario1
+        df_poliza , utilitario= completar_utilitario1 ( df_parapoliza = df_parapoliza, 
+                                                        utilitario=utilitario, 
+                                                        diccionario= diccionario_util_cc )
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+   
+
+    
+    #guardar_en_drive( utilitario )
 
     
     df_poliza = hacer_poliza_final(df_parapoliza, Referencia=Referencia)
