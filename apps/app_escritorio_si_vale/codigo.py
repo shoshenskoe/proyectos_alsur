@@ -320,7 +320,7 @@ def elaborar_excel_poliza(dfsucio, df, df4, df_parapoliza ):
     return archivo_buffer
 
 
-#path_archivo_excel = r"C:\Users\SALCIDOA\Downloads\archivo_para_probar_si_vale.xlsx"
+path_archivo_excel = r"C:\Users\SALCIDOA\Downloads\archivo_para_probar_si_vale.xlsx"
 
 
 def logica_principal( path_archivo_excel , Referencia:str ):
@@ -344,7 +344,7 @@ def logica_principal( path_archivo_excel , Referencia:str ):
     #posiblemente este paso sea redundante
     #  con la funcion crear_tabla_con_cc_vacia
     path_centro_util = "https://docs.google.com/spreadsheets/d/1Iy68cztYlqI6fLjE8l4s2D32BQLzUZG9/export?format=xlsx"
-    centros_costos = obtener_utilitario(path_centro_util)
+    centros_costos = pd.read_excel(path_centro_util)
 
     #si la lista de los empleados no es vacia se completa el diccionario
     if nombre_empleados_sin_cc:
