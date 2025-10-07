@@ -160,13 +160,6 @@ def crear_segunda_tabla_din( df ):
 
 
 
-######
-def obtener_utilitario(enlace_path):
-    
-    utilitario= pd.read_excel(enlace_path)
-    return utilitario
-
-
 ##aqui ya tenemo el df para poliza
 #ubicamos el utilitario de acuerdo al cc
 #input: df de poliza y df de utilitario
@@ -197,7 +190,7 @@ def obtener_faltantes_utilitario ( df_parapoliza):
 ###esta funcion pide los datos faltantes y los
 # anade al df de poliza y al df de utilitario
 
-def completar_utilitario1 ( df_parapoliza, utilitario, diccionario=None) :
+def completar_utilitario ( df_parapoliza, utilitario, diccionario=None) :
     
     datos_faltantes = df_parapoliza[df_parapoliza["UTILITARIO"].isnull()]
     datos_faltantes = datos_faltantes.reset_index()
@@ -225,50 +218,9 @@ def completar_utilitario1 ( df_parapoliza, utilitario, diccionario=None) :
             
             renglon = renglon.to_frame().T
 
-            utilitario=pd.concat( utilitario, renglon , ignore_index=True)
+            utilitario=pd.concat( [utilitario, renglon] , ignore_index=True)
 
     return df_parapoliza, utilitario
-
-
-def completar_utilitario(df_parapoliza, utilitario, respuestas: dict):
-    """
-    Completa el campo 'UTILITARIO' en df_parapoliza usando valores provistos por el usuario.
-
-    Args:
-        df_parapoliza: DataFrame que contiene la columna "UTILITARIO" y "CC".
-        utilitario: DataFrame donde se acumulan las correspondencias CC-UTILITARIO.
-        respuestas: dict con clave=CC y valor=utilitario elegido por el usuario.
-    
-    Returns:
-        df_parapoliza actualizado y utilitario actualizado.
-    """
-    datos_faltantes = df_parapoliza[df_parapoliza["UTILITARIO"].isnull()].reset_index()
-
-    for i in range(len(datos_faltantes)):
-        cc = datos_faltantes.loc[i, "CC"]
-        if cc != "E913":
-            j = datos_faltantes.loc[i, "index"]
-
-            if cc not in respuestas:
-                raise ValueError(f"No se proporcionó utilitario para {cc}")
-
-            utilitario = respuestas[cc].upper()
-
-            # Actualizamos el df original
-            df_parapoliza.loc[j, "UTILITARIO"] = utilitario
-
-            # Guardamos en tabla auxiliar
-            S = pd.Series({"CC": cc, "UTILITARIO": utilitario})
-            utilitario = pd.concat([utilitario, S.to_frame().T], ignore_index=True)
-
-
-    return df_parapoliza, utilitario
-
-
-
-
-
-
 
 
 
@@ -368,10 +320,10 @@ def elaborar_excel_poliza(dfsucio, df, df4, df_parapoliza ):
     return archivo_buffer
 
 
-path_archivo_excel = r"C:\Users\SALCIDOA\Downloads\archivo_para_probar_si_vale.xlsx"
+#path_archivo_excel = r"C:\Users\SALCIDOA\Downloads\archivo_para_probar_si_vale.xlsx"
 
 
-def logica_principal( path_archivo_excel , diccionario_usuario1 , diccionario_usuario2, Referencia:str ):
+def logica_principal( path_archivo_excel , Referencia:str ):
 
     dfsucio = obtener_dfsucio(path_archivo_excel)
 
@@ -455,29 +407,13 @@ def logica_principal( path_archivo_excel , diccionario_usuario1 , diccionario_us
 
         #se completa la poliza y el utilitario con los cc y los nombres de los empleados que el usuario debe completar
         #con el diccionario diccionario_usuario1
-        df_poliza , utilitario= completar_utilitario1 ( df_parapoliza = df_parapoliza, 
+        df_parapoliza , utilitario= completar_utilitario ( df_parapoliza = df_parapoliza, 
                                                         utilitario=utilitario, 
                                                         diccionario= diccionario_util_cc )
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-   
 
     
     #guardar_en_drive( utilitario )
 
-    
     df_poliza = hacer_poliza_final(df_parapoliza, Referencia=Referencia)
 
      # creamos un objeto de buffer
@@ -487,5 +423,6 @@ def logica_principal( path_archivo_excel , diccionario_usuario1 , diccionario_us
     #colab
     archivo_excel_buffer = elaborar_excel_poliza(dfsucio, df, df4, df_poliza)
 
+    archivo_excel_buffer.seek(0)
     
     return archivo_excel_buffer
