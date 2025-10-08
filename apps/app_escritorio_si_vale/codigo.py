@@ -320,10 +320,10 @@ def elaborar_excel_poliza(dfsucio, df, df4, df_parapoliza ):
     return archivo_buffer
 
 
-path_archivo_excel = r"C:\Users\SALCIDOA\Downloads\archivo_para_probar_si_vale.xlsx"
+#path_archivo_excel = r"C:\Users\SALCIDOA\Downloads\archivo_para_probar_si_vale.xlsx"
 
 
-def logica_principal( path_archivo_excel , Referencia:str ):
+def main( path_archivo_excel , Referencia:str ):
 
     dfsucio = obtener_dfsucio(path_archivo_excel)
 
@@ -339,7 +339,7 @@ def logica_principal( path_archivo_excel , Referencia:str ):
 
     #quitamos el total de la lista nombre_empleados_sin_cc
     nombre_empleados_sin_cc = nombre_empleados_sin_cc[:-1]
-
+    
     #almacenamos los centros de costos en un dataframe
     #posiblemente este paso sea redundante
     #  con la funcion crear_tabla_con_cc_vacia
@@ -396,7 +396,7 @@ def logica_principal( path_archivo_excel , Referencia:str ):
 
 
 
-     #si la lista de los utilitarios falntaes
+     #si la lista de los utilitarios faltantes
      #no es vacia se completa el diccionario
     if lista_utilitario_faltantes:
         diccionario_util_cc = {CC: "" for CC in lista_utilitario_faltantes}
